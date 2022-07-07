@@ -1,0 +1,903 @@
+// inisisasi
+function inisiasi() {
+    var interval;
+    daftarObrolan();
+}
+  
+  
+  //proses updating dan kirim pesan
+  function daftarObrolan(){
+    $(document).ready(function(){
+      list = '';
+      $.ajax({
+        url: 'http://localhost/market/public/chat/getObrolan',
+        method: 'POST',
+        success: function(data){
+          var data = JSON.parse(data);
+          for (var i = 0; i < data .length; i++){
+            var list =
+                      '<li>' +
+                        '<div style="cursor: pointer;" onclick="manage(\'' + data[i]['mb_username'] + '\')">' +
+                          '<img class="contacts-list-img" src="../public/img/profile_default.png" alt="User Avatar">' +
+                          '<div class="contacts-list-info">' +
+                            '<span class="contacts-list-name text-dark">' +
+                              data[i]['mb_name'] +
+                              '<small class="contacts-list-date float-right">1/4/2015</small>' +
+                            '</span>' +
+                            '<span class="contacts-list-msg">Never mind I found...</span>' +
+                          '</div>' +
+                        '</div>' +
+                      '</li>';
+              $(list).appendTo('#obrolan');
+          }
+        }
+      })
+    })
+  }
+  
+  // manage obrolan
+  function manage(mb_username){
+    this.teman = mb_username;
+    clearInterval(this.intervalID);
+    this.intervalID = setInterval(function(){
+     loadHistoriObrolan(mb_username);
+    }, 500)
+  }
+
+  // menampilkan chat dari database
+function loadHistoriObrolan(mb_username){
+  
+}
+
+
+public function daftarObrolan(){
+
+    $sql = "SELECT mb_name, mb_username FROM member";
+    $query = $this->db->query($sql);
+    $query = $this->db->resultSet();
+
+    return $query;
+  }
+  
+  public function historiObrolan($data){
+    $hasil = ''; $output ='';
+    $username = $data['adm_username'];
+    $temanObrolan = $data['temanObrolan'];
+    $output = '';
+    $hasil = [];
+
+    //mencari data teman obrolan
+    $cari = "SELECT * FROM member WHERE  mb_username = '$temanObrolan' ";
+    $queryMember = $this->db->query($cari);
+    $queryMember = $this->db->resultSet();
+    
+
+    //mencari data histori obrolan
+    $sql = "SELECT * FROM chat WHERE
+           (pengirim = '$username' AND penerima = '$temanObrolan')
+           OR
+           (pengirim = '$temanObrolan' AND penerima = '$username')
+           ORDER BY chat_id ASC
+           ";
+
+    $queryChat = $this->db->query($sql);
+    $queryChat = $this->db->resultSet();
+    
+    return $queryChat;
+    var_dump($queryChat);
+  }
+
+  public function kirimPesan($data){
+    
+    $tgl = date('Y-m-d H:i:s');
+    
+    $pengirim = $data['adm_username'];
+    $penerima = $data['temanObrolan'];
+    $pesan = $data['pesan'];
+    
+    $sql = "INSERT INTO chat(pengirim, penerima, chat, datetime) VALUES ('$pengirim','$penerima','$pesan','$tgl') ";
+    $query = $this->db->query($sql);
+
+    if ($query == TRUE){
+      $output = 1;
+    }else{
+      $output = 0;
+    }
+
+    return $output;
+
+  }
+
+
+
+  public function getObrolan(){
+    echo json_encode($this->model('Chat_model')->daftarObrolan($_POST));
+  }
+
+  public function getHistori(){
+    var_dump($_POST);
+  //   $data = $this->model('Chat_model')->dataSession();
+  //   $data['temanObrolan'] = $_POST['temanObrolan'];
+  //  echo json_encode($this->model("Chat_model")->historiObrolan($data));
+  }
+
+    <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper pt-2">
+
+    <!-- Main content -->
+    <section class="content" >
+      <div class="container-fluid">
+        <div class="row mb-2" >
+          <div class="col-lg-4">
+          <div class="card direct-chat direct-chat-primary" style="height: 100%">
+              <div class="card-header">
+                <h3 class="card-title">Message</h3>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                <!-- Conversations are loaded here -->
+                  <div class="direct-chat-messages" style="height: 30rem" >
+                  <ul class="contacts-list" id="obrolan">
+
+                  </ul>
+                  </div>
+                <!--/.direct-chat-messages-->
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-8">
+            
+            <div class="card direct-chat direct-chat-primary" style="height: 100%">
+              <div class="card-header">
+                <h3 class="card-title">Direct Chat</h3>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                <!-- Conversations are loaded here -->
+                <div class="direct-chat-messages" style="height: 28rem">
+                
+                </div>
+                <!--/.direct-chat-messages-->
+              </div>
+              <!-- /.card-body -->
+              <div class="card-footer">
+                <form method="POST" id="formProses">
+                  <div class="input-group">
+                    <input type="text" name="pesan" id="pesan" placeholder="Ketikan Sebuah Pesan ..." class="form-control">
+                    <span class="input-group-append">
+                      <button type="submit" name="submit" id="submit_chat" class="btn btn-primary"><i class="fas fa-share"></i></button>
+                    </span>
+                  </div>
+                </form>
+              </div>
+              <!-- /.card-footer-->
+            </div>
+  
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- /.content -->
+
+  </div>
+  <!-- /.content-wrapper -->
+
+
+  $(document).ready(function(){
+    $("#submit_chat").click(function(){
+    
+          $("#obrolan").append(
+                    '<div class="direct-chat-msg right">'+
+                      '<div class="direct-chat-infos clearfix">'+
+                        '<span class="direct-chat-name float-left">Alexander Pierce</span>'+
+                        '<span class="direct-chat-timestamp float-right">23 Jan 5:37 pm</span>'+
+                      '</div>'+
+                      '<img class="direct-chat-img" src="dist/img/user1-128x128.jpg" alt="message user image">'+
+                      '<div class="direct-chat-text">'+
+                        $("#pesan").val()+
+                      '</div>'+
+                    '</div>'
+          );
+          $("#pesan").val("") 
+    })
+  })
+
+
+
+
+  ------------------------------------------------------------------------------------
+
+
+
+  function change()
+   {
+      var x = document.getElementById('pass').type;
+
+      if (x == 'password')
+      {
+         document.getElementById('pass').type = 'text';
+         document.getElementById('mybutton').innerHTML = '<i class="fas fa-eye-slash"></i>';
+      }
+      else
+      {
+         document.getElementById('pass').type = 'password';
+         document.getElementById('mybutton').innerHTML = '<i class="fas fa-eye"></i>';
+      }
+
+   }
+
+
+ // inisisasi
+function inisiasi() {
+   var interval;
+   daftarObrolan();
+ }
+ 
+ //proses updating dan kirim pesan
+ function daftarObrolan(){
+   $(document).ready(function(){
+     list = '';
+     $.ajax({
+       url: 'http://localhost/market/public/chat/getObrolan',
+       method: 'POST',
+       success: function(data){
+         var temanObrol = JSON.parse(data);
+         for (var i = 0; i < temanObrol.length; i++){
+           var list = 
+                       '<li>' +
+                         '<div style="cursor: pointer;" onclick="manage(\'' + temanObrol[i]['mb_username'] + '\')">' +
+                           '<img class="contacts-list-img" src="../public/img/profile_default.png" alt="User Avatar">' +
+                           '<div class="contacts-list-info">' +
+                             '<span class="contacts-list-name text-dark">' +
+                               temanObrol[i]['mb_name'] +
+                               '<small class="contacts-list-date float-right">1/4/2015</small>' +
+                             '</span>' +
+                             '<span class="contacts-list-msg">Never mind I found...</span>' +
+                           '</div>' +
+                         '</div>' +
+                       '</li>';
+               $(list).appendTo('#obrolan');
+         }
+       }
+     })
+   })
+ }
+ 
+ //manage obrolan
+ function manage(mb_username){
+   this.teman = mb_username;
+   clearInterval(this.intervalID);
+   this.intervalID = setInterval(function(){
+     loadHistoriObrolan(mb_username);
+   }, 500)
+ }
+ 
+ //menampilkan histori obrolan
+ function loadHistoriObrolan(mb_username){
+   $.ajax({
+     url: 'http://localhost/market/public/chat/getHistori',
+     method: 'POST',
+     data: {
+       temanObrolan: mb_username
+     },
+     success: function(response){
+       $('#roomchat').html(response)
+     }
+   })
+ }
+ 
+ // kirim pesan ke database
+ function kirim(){
+   var pesan = document.getElementById("pesan").value;
+   console.log(pesan);
+ }
+ 
+ // proses mengirim pesan
+ function kirimPesan(pesan){
+   var temanObrolan = this.teman;
+   var pesan = pesan;
+   $('#pesan').val('');
+   $.ajax({
+     method: 'POST',
+     url: 'http://localhost/market/public/chat/getPesan',
+     data: {
+       temanObrolan: temanObrolan,
+       pesan: pesan
+     },
+     success: function(response){
+       manage(temanObrolan);
+       $('#pesan').val('');
+     }
+   });
+ }
+ 
+
+ <script src="<?php echo BASEURL; ?>/js/script.js"></script>
+<script src="<?php echo BASEURL; ?>/js/chat.js"></script>
+
+
+
+  public function jumlahNotification(){
+
+    $query = "SELECT * FROM notif WHERE status = 1 ";
+    $hasil = $this->db->query($query);
+    $hasil = $this->db->resultSet();
+    $akhir = count($hasil);
+    return $akhir;
+  }
+
+  <?php if($data['notif'] > 0 ) { ?>
+          <span class="dropdown-item dropdown-header">
+            <?php echo $data['notif'] ?> New Notifications</span>
+          <?php }else{ ?>
+            <span class="dropdown-item dropdown-header">Tidak ada pesan masuk</span>
+          <?php } ?>
+          <div class="dropdown-divider"></div>
+          
+
+
+  <a href="#" class="dropdown-item">
+            <!-- Message Start -->
+            <div class="media">
+              <div class="media-body">
+                <h3 class="dropdown-item-title">
+                 <b>Pesan Baru</b>
+                </h3>
+                <p class="text-sm">Sintiya</p>
+                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
+              </div>
+            </div>
+            <!-- Message End -->
+          </a>
+          <a href="#" class="dropdown-item">
+            <!-- Message Start -->
+            <div class="media">
+              <div class="media-body">
+                <h3 class="dropdown-item-title">
+                  <b>Retail Review Baru</b>
+                </h3>
+                <p class="text-sm">Tb. Abadi Jaya</p>
+                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
+              </div>
+            </div>
+            <!-- Message End -->
+          </a>
+          <a href="#" class="dropdown-item">
+            <!-- Message Start -->
+            <div class="media">
+              <div class="media-body">
+                <h3 class="dropdown-item-title">
+                  <b>Pesan Baru</b>
+                </h3>
+                <p class="text-sm">Budi Setiawan</p>
+                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
+              </div>
+            </div>
+            <!-- Message End -->
+          </a>
+ 
+
+ $output .= '
+        <a href="#" class="dropdown-item">
+        <div class="media">
+          <div class="media-body">
+            <p class="text-sm">Tidak ada Pesan Masuk</p>
+            <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
+          </div>
+        </div>
+      </a>
+        ';
+
+
+
+var temanObrol = JSON.parse(data);
+        for (var i = 0; i < temanObrol.length; i++){
+          var list = 
+                      '<li>' +
+                        '<div style="cursor: pointer;" onclick="manage(\'' + temanObrol[i]['mb_username'] + '\')">' +
+                          '<img class="contacts-list-img" src="../public/img/profile_default.png" alt="User Avatar">' +
+                          '<div class="contacts-list-info">' +
+                            '<span class="contacts-list-name text-dark">' +
+                              temanObrol[i]['mb_name'] +
+                              '<small class="contacts-list-date float-right">1/4/2015</small>' +
+                            '</span>' +
+                            '<span class="contacts-list-msg">hai apa</span>' +
+                          '</div>' +
+                        '</div>' +
+                      '</li>';
+              $(list).appendTo('#obrolan');
+        }
+
+
+
+------------------------------------------------------------------------------------------------
+
+
+
+// inisisasi
+ function inisiasi() {
+  var interval;
+  daftarObrolan();
+}
+
+//proses updating dan kirim pesan
+function daftarObrolan(){
+  $(document).ready(function(){
+    list = '';
+    $.ajax({
+      url: 'http://localhost/market/public/chat/getObrolan',
+      method: 'POST',
+      success: function(data){
+        console.log('data');
+      }
+    })
+  })
+}
+
+//manage obrolan
+function manage(mb_username){
+  this.teman = mb_username;
+  clearInterval(this.intervalID);
+  this.intervalID = setInterval(function(){
+    loadHistoriObrolan(mb_username);
+  }, 500)
+}
+
+
+//menampilkan histori obrolan
+function loadHistoriObrolan(mb_username){
+  $.ajax({
+    url: 'http://localhost/market/public/chat/getHistori',
+    method: 'POST',
+    data: {
+      temanObrolan: mb_username
+    },
+    success: function(response){
+      $('#roomchat').html(response)
+    }
+  })
+}
+
+
+function kirim(){
+  var temanObrolan = this.teman;
+  var pesan = document.getElementById("pesan").value;
+  
+  $.ajax({
+    url: 'http://localhost/market/public/chat/getPesan',
+    method: 'POST',
+    data: {
+      temanObrolan: temanObrolan,
+      pesan: pesan
+    },
+    success: function(response){
+      if (response == 1){
+        $("#pesan").val("") 
+      }
+    }
+  })
+}
+
+
+--------------------------------------------------------------------------------------
+$(function(){
+  
+  //update view dengan notification ajax
+
+  function load_unseen_notification(view = ''){
+    $.ajax({
+        url: 'http://localhost/market/public/home/notif',
+        method: 'POST',
+        data: {view:view},
+        dataType: 'json',
+        success: function(data){
+          $('.dropdown-menu').html(data.notification);
+          if(data.unseen_notification > 0){
+            $('.count').html(data.unseen_notification);
+          }
+          // console.log(data);
+        } 
+    });
+  }
+
+  $(document).on('click','.dropdown-bell',function(){
+    $('.count').html('');
+    load_unseen_notification('yes');
+  });
+
+
+  setInterval(function(){
+    load_unseen_notification();
+  }, 1000);
+
+
+});
+
+
+-----------------------------------------------------------------------------------
+
+function change()
+   {
+      var x = document.getElementById('pass').type;
+
+      if (x == 'password')
+      {
+         document.getElementById('pass').type = 'text';
+         document.getElementById('mybutton').innerHTML = '<i class="fas fa-eye-slash"></i>';
+      }
+      else
+      {
+         document.getElementById('pass').type = 'password';
+         document.getElementById('mybutton').innerHTML = '<i class="fas fa-eye"></i>';
+      }
+
+   }
+
+
+
+
+$result = $this->model('Home_model')->tampilNotif();
+      
+      $chat = "CHT";
+      $review = "RTL";
+      $output = '';
+
+      if ($result > 0){
+
+        foreach ($result as $row){
+
+          $id_tujuan = $row['id_tujuan'];
+          $prefix = substr($id_tujuan,0,3);
+
+          if ($prefix==$chat){
+
+            $output .= '
+              <a href="http://localhost/market/public/chat" class="dropdown-item">
+                <div class="media"> 
+                  <div class="media-body">
+                    <h3 class="dropdown-item-title">
+                    <b>Pesan Baru</b>
+                    </h3>
+                    <p class="text-sm">'.$row['isi_notif'].'</p>
+                  </div>
+                </div>
+              </a>
+              ';
+
+          } elseif($prefix==$review){
+
+            $output .= '
+              <a href="http://localhost/market/public/retail/review" class="dropdown-item">
+                <div class="media"> 
+                  <div class="media-body">
+                    <h3 class="dropdown-item-title">
+                    <b>Pendaftar Retail Baru</b>
+                    </h3>
+                    <p class="text-sm">'.$row['isi_notif'].'</p>
+                  </div>
+                </div>
+              </a>
+              ';
+
+          }
+        }
+      }
+
+
+
+
+$jumlah = $this->model('Home_model')->jumlahNotif();
+    
+    $data = [
+      'notification' => $output,
+      'unseen_notification' => $jumlah
+    ];
+
+    // var_dump($data);
+    echo json_encode($data);s
+
+
+
+
+--------------------------------------------------------------
+// inisisasi
+function inisiasi() {
+  var interval;
+  daftarObrolan();
+}
+
+//proses updating dan kirim pesan
+function daftarObrolan() {
+  $(document).ready(function () {
+    list = "";
+    $.ajax({
+      url: "http://localhost/market/public/chat/getObrolan",
+    }).done(function (data) {
+      var temanObrol = JSON.parse(data);
+      for (var i = 0; i < temanObrol.length; i++) {
+        var list =
+          "<li>" +
+          '<div style="cursor: pointer;" onclick="manage(\'' +
+          temanObrol[i]["mb_username"] +
+          "')\">" +
+          '<img class="contacts-list-img" src="../public/img/' +
+          temanObrol[i]["mb_picture"] +
+          '" alt="User Avatar">' +
+          '<div class="contacts-list-info">' +
+          '<span class="contacts-list-name text-dark">' +
+          temanObrol[i]["mb_name"] +
+          "</span>" +
+          "</div>" +
+          "</div>" +
+          "</li>";
+        $(list).appendTo("#obrolan");
+      }
+    });
+  });
+}
+
+//manage obrolan
+function manage(mb_username) {
+  this.teman = mb_username;
+  clearInterval(this.intervalID);
+  this.intervalID = setInterval(function () {
+    loadHistoriObrolan(mb_username);
+  }, 500);
+}
+
+//menampilkan histori obrolan
+function loadHistoriObrolan(mb_username) {
+  $.ajax({
+    url: "http://localhost/market/public/chat/getHistori",
+    method: "POST",
+    data: {
+      temanObrolan: mb_username,
+    },
+    success: function (response) {
+      $("#roomchat").html(response);
+    },
+  });
+}
+
+// membuat kirim data
+function kirim() {
+  var temanObrolan = this.teman;
+  var pesan = document.getElementById("pesan").value;
+
+  $.ajax({
+    url: "http://localhost/market/public/chat/getPesan",
+    method: "POST",
+    data: {
+      temanObrolan: temanObrolan,
+      pesan: pesan,
+    },
+    success: function (response) {
+      if (response == 1) {
+        $("#pesan").val("");
+      }
+    },
+  });
+}
+
+// notifikasi retail dan chat
+$(document).ready(function () {
+  // update view with notification ajax
+  function load_notification(view = "") {
+    $.ajax({
+      url: "http://localhost/market/public/home/notif",
+      method: "POST",
+      data: { view: view },
+      dataType: "json",
+      success: function (data) {
+        // console.log(data);
+        $(".dropdown-menu").html(data.notification);
+        if (data.unseen_notification > 0) {
+          $(".count").html(data.unseen_notification);
+        }
+      },
+    });
+  }
+
+  load_notification();
+  //load new notification
+  $(".dropdown-bell").on("click", function () {
+    $(".count").html("");
+    load_notification("yes");
+  });
+  setInterval(function () {
+    load_notification();
+  }, 1000);
+
+  // update status notif
+  $(".dropdown-a").on("click", function () {
+    console.log("hai");
+  });
+});
+
+
+-------------------------------------------------------------------------------------
+
+<div class="chart tab-pane active" id="terbanyak-chart">
+                  <canvas id="barChart" style="min-height: 400px; height: 400px; max-height: 400px; max-width: 100%;"></canvas>
+                </div>
+
+
+
+$(function () {
+  var ctx = document.getElementById("terbanyakChart").getContext("2d");
+  var barChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: [
+        "January",
+        "February",
+        "Maret",
+        "April",
+        "May",
+        "Juny",
+        "August",
+        "September",
+        "October",
+        "November",
+        "Desember",
+      ],
+      datasets: [
+        {
+          label: "",
+          data: [2, 4, 8, 5, 5, 7, 8, 9, 4, 2, 3, 6],
+          backgroundColor: [
+            "rgba(255, 99, 132, 0.2)",
+            "rgba(54, 162, 235, 0.2)",
+            "rgba(255, 206, 86, 0.2)",
+            "rgba(255, 99, 132, 0.2)",
+            "rgba(75, 192, 192, 0.2)",
+            "rgba(255, 206, 86, 0.2)",
+            "rgba(255, 99, 132, 0.2)",
+            "rgba(75, 192, 192, 0.2)",
+            "rgba(255, 206, 86, 0.2)",
+            "rgba(255, 99, 132, 0.2)",
+            "rgba(75, 192, 192, 0.2)",
+          ],
+          borderColor: [
+            "rgba(255,99,132,1)",
+            "rgba(54, 162, 235, 1)",
+            "rgba(255, 206, 86, 1)",
+            "rgba(75, 192, 192, 1)",
+          ],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        ],
+      },
+    },
+  });
+});
+
+
+------------------------------------------------------------------------------------
+
+<script>
+  $(function () {
+
+// chart terbanyak
+var ctx = document.getElementById("terbanyakChart").getContext("2d");
+var barChart = new Chart(ctx, {
+  type: "bar",
+  data: {
+     labels:'', 
+    datasets: [
+      {
+        label: "",
+        data: '',
+        
+        // [2, 4, 8, 5, 100, 7, 8, 9, 4, 2, 3, 6],
+        backgroundColor: [
+          "rgba(255, 99, 132, 0.2)",
+          "rgba(54, 162, 235, 0.2)",
+          "rgba(255, 206, 86, 0.2)",
+          "rgba(255, 99, 132, 0.2)",
+          "rgba(75, 192, 192, 0.2)",
+          "rgba(255, 206, 86, 0.2)",
+          "rgba(255, 99, 132, 0.2)",
+          "rgba(75, 192, 192, 0.2)",
+          "rgba(255, 206, 86, 0.2)",
+          "rgba(255, 99, 132, 0.2)",
+          "rgba(75, 192, 192, 0.2)",
+        ],
+        borderColor: [
+          "rgba(255,99,132,1)",
+          "rgba(54, 162, 235, 1)",
+          "rgba(255, 206, 86, 1)",
+          "rgba(75, 192, 192, 1)",
+        ],
+        borderWidth: 1,
+      },
+    ],
+  },
+  options: {
+    scales: {
+      yAxes: [
+        {
+          ticks: {
+            beginAtZero: true,
+          },
+        },
+      ],
+    },
+  },
+});
+
+// chart tertinggi
+var cty = document.getElementById("tertinggiChart").getContext("2d");
+var barChart = new Chart(cty, {
+  type: "line",
+  data: {
+    labels: '',
+    // [
+    //   "January",
+    //   "February",
+    //   "Maret",
+    //   "April",
+    //   "May",
+    //   "Juny",
+    //   "August",
+    //   "September",
+    //   "October",
+    //   "November",
+    //   "Desember",
+    // ],
+    datasets: [
+      {
+        label: "",
+        data: '',
+        // [2, 4, 8, 5, 5, 7, 8, 9, 4, 2, 3, 6],
+        backgroundColor: [
+          "rgba(255, 99, 132, 0.2)",
+          "rgba(54, 162, 235, 0.2)",
+          "rgba(255, 206, 86, 0.2)",
+          "rgba(255, 99, 132, 0.2)",
+          "rgba(75, 192, 192, 0.2)",
+          "rgba(255, 206, 86, 0.2)",
+          "rgba(255, 99, 132, 0.2)",
+          "rgba(75, 192, 192, 0.2)",
+          "rgba(255, 206, 86, 0.2)",
+          "rgba(255, 99, 132, 0.2)",
+          "rgba(75, 192, 192, 0.2)",
+        ],
+        borderColor: [
+          "rgba(255,99,132,1)",
+          "rgba(54, 162, 235, 1)",
+          "rgba(255, 206, 86, 1)",
+          "rgba(75, 192, 192, 1)",
+        ],
+        borderWidth: 1,
+      },
+    ],
+  },
+  options: {
+    scales: {
+      yAxes: [
+        {
+          ticks: {
+            beginAtZero: true,
+          },
+        },
+      ],
+    },
+  },
+});
+});
+
+</script>
+
+
+
